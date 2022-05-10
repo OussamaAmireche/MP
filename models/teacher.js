@@ -11,12 +11,13 @@ const teacherSChema = mongoose.Schema({
   userName: {
     type: "string",
     required: true,
+    unique: true,
   },
   email: {
     type: "string",
     required: true,
+    unique: true,
   },
-
   password: {
     type: "string",
     required: true,
@@ -24,11 +25,15 @@ const teacherSChema = mongoose.Schema({
   moduleId: {
     type: "string",
     required: true,
-    ref: "Module",
+    ref: "Matiere",
   },
   responsible: {
     type: "boolean",
     required: true,
+  },
+  role: {
+    type: "string",
+    default: "teacher"
   },
 });
 

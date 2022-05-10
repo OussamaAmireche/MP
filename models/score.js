@@ -8,7 +8,7 @@ const ScoreSChema = mongoose.Schema({
   moduleId: {
     type: "String",
     required: true,
-    ref: "module",
+    ref: "Matiere",
   },
   score: {
     type: "Number",
