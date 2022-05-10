@@ -3,9 +3,10 @@ const router = express.Router()
 const Student = require('../models/student')
 const { genSaltSync, hashSync, compareSync } = require('bcrypt');
 const { sign } = require('jsonwebtoken');
+const { checkToken } = require('../authentication/auth')
 
 // Getting all
-router.get('/', async (req, res) => {
+router.get('/', checkToken, async (req, res) => {
   try {
     const Students = await Student.find()
     res.json(Students)
