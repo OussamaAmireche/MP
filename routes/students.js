@@ -1,6 +1,8 @@
 const express = require('express')
 const router = express.Router()
 const Student = require('../models/student')
+const { genSaltSync, hashSync, compareSync } = require('bcrypt');
+const { sign } = require('jsonwebtoken');
 
 // Getting all
 router.get('/', async (req, res) => {
@@ -19,18 +21,44 @@ router.get('/:id', getStudent, (req, res) => {
 
 // Creating one
 router.post('/', async (req, res) => {
+  const salt = genSaltSync(10);      
   const student = new Student({
     fname: req.body.fname,
     lname: req.body.lname,
     userName: req.body.userName,
     email: req.body.email,
-    password: req.body.password,
+    password: hashSync(req.body.password, salt)
   })
   try {
     const newStudent = await student.save()
     res.status(201).json(newStudent)
   } catch (err) {
     res.status(400).json({ message: err.message })
+  }
+})
+
+// Login
+router.post('/login', async (req, res) => {
+  let student
+  try {
+    student = await Student.findOne({email: req.body.email})
+    if (student == null) {
+      return res.status(404).json({ message: 'Email Or Password Incorrect' })
+    }
+  } catch (err) {
+    return res.status(500).json({ message: err.message })
+  }
+  const result = compareSync(req.body.password, student.password);
+  if(result){
+    const jsontoken = sign({ result: student },"asma_key", {
+      expiresIn: "20h"
+    });
+    return res.json({
+      student,
+      token: jsontoken
+    });
+  } else {
+    return res.json({message: 'Email Or Password Incorrect'});
   }
 })
 
