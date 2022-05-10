@@ -1,9 +1,10 @@
 const express = require('express')
 const router = express.Router()
 const Matiere = require('../models/matiere')
+const { checkToken, unauthorizeStudent, unauthorizeTeacher, unauthorizeResponsible } = require('../authentication/auth')
 
 // Getting all
-router.get('/', async (req, res) => {
+router.get('/', checkToken, async (req, res) => {
   try {
     const Matieres = await Matiere.find()
     res.json(Matieres)
@@ -13,12 +14,12 @@ router.get('/', async (req, res) => {
 })
 
 // Getting One
-router.get('/:codeM', getMatiere, (req, res) => {
+router.get('/:codeM', checkToken, getMatiere, (req, res) => {
   res.json(res.matiere)
 })
 
 // Creating one
-router.post('/', async (req, res) => {
+router.post('/', checkToken, unauthorizeStudent, unauthorizeTeacher, async (req, res) => {
   const matiere = new Matiere({
     codeM: req.body.codeM,
     matiereName: req.body.matiereName
@@ -32,7 +33,7 @@ router.post('/', async (req, res) => {
 })
 
 // Updating One
-router.patch('/:codeM', getMatiere, async (req, res) => {
+router.patch('/:codeM', checkToken, unauthorizeStudent, unauthorizeTeacher, getMatiere, async (req, res) => {
   if (req.body.codeM != null) {
     res.matiere.codeM = req.body.codeM
   }
@@ -48,7 +49,7 @@ router.patch('/:codeM', getMatiere, async (req, res) => {
 })
 
 // Deleting One
-router.delete('/:codeM', getMatiere, async (req, res) => {
+router.delete('/:codeM', checkToken, unauthorizeStudent, unauthorizeTeacher, getMatiere, async (req, res) => {
   try {
     await res.matiere.remove()
     res.json({ message: 'Deleted Matiere' })

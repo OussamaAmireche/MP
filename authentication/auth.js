@@ -46,7 +46,7 @@ module.exports = {
                 return res.status(401).json({ message: "Invalid Token " });
                 } else {
                 req.decoded = decoded;
-                if(req.decoded.result.role === "teacher"){
+                if(req.decoded.result.role === "teacher" && req.decoded.result.responsible === false){
                     return res.status(403).json({ message: "You are Unauthorized" });
                 }
                 next();

@@ -1,9 +1,10 @@
 const express = require('express')
 const router = express.Router()
 const Reclamation = require('../models/reclamation')
+const { checkToken, unauthorizeStudent, unauthorizeTeacher, unauthorizeResponsible } = require('../authentication/auth')
 
 // Getting all
-router.get('/', async (req, res) => {
+router.get('/', checkToken, unauthorizeStudent, unauthorizeTeacher, async (req, res) => {
   try {
     const Reclamations = await Reclamation.find()
     res.json(Reclamations)
@@ -13,12 +14,12 @@ router.get('/', async (req, res) => {
 })
 
 // Getting One
-router.get('/:id', getReclamation, (req, res) => {
+router.get('/:id', checkToken, unauthorizeTeacher, getReclamation, (req, res) => {
   res.json(res.reclamation)
 })
 
-//
-router.get('/student/:id', async (req, res) => {
+//Getting All For A Single Student
+router.get('/student/:id', checkToken, unauthorizeTeacher, async (req, res) => {
     try {
       const Reclamations = await Reclamation.find({studentId: req.params.id})
       if (Reclamations.length === 0) {
@@ -31,7 +32,7 @@ router.get('/student/:id', async (req, res) => {
   })
 
 // Creating one
-router.post('/', async (req, res) => {
+router.post('/', checkToken, unauthorizeTeacher, unauthorizeResponsible, async (req, res) => {
   const reclamation = new Reclamation({
     studentId: req.body.studentId,
     Description: req.body.Description
@@ -45,7 +46,7 @@ router.post('/', async (req, res) => {
 })
 
 // Updating One
-router.patch('/:id', getReclamation, async (req, res) => {
+router.patch('/:id', checkToken, unauthorizeTeacher, unauthorizeResponsible, getReclamation, async (req, res) => {
   if (req.body.studentId != null) {
     res.reclamation.studentId = req.body.studentId
   }
@@ -61,7 +62,7 @@ router.patch('/:id', getReclamation, async (req, res) => {
 })
 
 // Deleting One
-router.delete('/:id', getReclamation, async (req, res) => {
+router.delete('/:id', checkToken, unauthorizeTeacher, unauthorizeResponsible, getReclamation, async (req, res) => {
   try {
     await res.reclamation.remove()
     res.json({ message: 'Deleted Reclamation' })

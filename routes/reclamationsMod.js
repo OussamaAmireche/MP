@@ -1,24 +1,15 @@
 const express = require('express')
 const router = express.Router()
 const ReclamationMod = require('../models/reclamationMod')
-
-// Getting all
-router.get('/', async (req, res) => {
-  try {
-    const ReclamationsMod = await ReclamationMod.find()
-    res.json(ReclamationsMod)
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
-})
+const { checkToken, unauthorizeStudent, unauthorizeTeacher, unauthorizeResponsible } = require('../authentication/auth')
 
 // Getting One
-router.get('/:id', getReclamationMod, (req, res) => {
+router.get('/:id', checkToken, unauthorizeResponsible, getReclamationMod, (req, res) => {
   res.json(res.reclamationMod)
 })
 
 // Getting All For A Single Student
-router.get('/student/:id', async (req, res) => {
+router.get('/student/:id', checkToken, unauthorizeTeacher, unauthorizeResponsible, async (req, res) => {
     try {
       const ReclamationsMod = await ReclamationMod.find({studentId: req.params.id})
       if (ReclamationsMod.length === 0) {
@@ -31,7 +22,7 @@ router.get('/student/:id', async (req, res) => {
   })
 
 // Getting All For A Certain Module
-router.get('/matiere/:codeM', async (req, res) => {
+router.get('/matiere/:codeM', checkToken, unauthorizeStudent, unauthorizeResponsible, async (req, res) => {
     try {
       const ReclamationsMod = await ReclamationMod.find({moduleId: req.params.codeM})
       if (ReclamationsMod.length === 0) {
@@ -44,7 +35,7 @@ router.get('/matiere/:codeM', async (req, res) => {
   })
 
 // Creating one
-router.post('/', async (req, res) => {
+router.post('/', checkToken, unauthorizeStudent, unauthorizeResponsible, async (req, res) => {
   const reclamationMod = new ReclamationMod({
     studentId: req.body.studentId,
     moduleId: req.body.moduleId,
@@ -59,7 +50,7 @@ router.post('/', async (req, res) => {
 })
 
 // Updating One
-router.patch('/:id', getReclamationMod, async (req, res) => {
+router.patch('/:id', checkToken, unauthorizeStudent, unauthorizeResponsible, getReclamationMod, async (req, res) => {
   if (req.body.studentId != null) {
     res.reclamationMod.studentId = req.body.studentId
   }
@@ -78,7 +69,7 @@ router.patch('/:id', getReclamationMod, async (req, res) => {
 })
 
 // Deleting One
-router.delete('/:id', getReclamationMod, async (req, res) => {
+router.delete('/:id', checkToken, unauthorizeStudent, unauthorizeResponsible, getReclamationMod, async (req, res) => {
   try {
     await res.reclamationMod.remove()
     res.json({ message: 'Deleted Reclamation' })

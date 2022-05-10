@@ -3,6 +3,7 @@ const router = express.Router()
 const Teacher = require('../models/teacher')
 const { genSaltSync, hashSync, compareSync } = require('bcrypt');
 const { sign } = require('jsonwebtoken');
+const { checkToken, unauthorizeStudent, unauthorizeTeacher, unauthorizeResponsible } = require('../authentication/auth')
 
 // Getting all
 router.get('/', async (req, res) => {
@@ -20,7 +21,7 @@ router.get('/:id', getTeacher, (req, res) => {
 })
 
 // Creating one
-router.post('/', async (req, res) => {
+router.post('/', checkToken, unauthorizeStudent, unauthorizeTeacher, async (req, res) => {
   const salt = genSaltSync(10); 
   const teacher = new Teacher({
     fname: req.body.fname,
@@ -65,7 +66,7 @@ router.post('/login', async (req, res) => {
 })
 
 // Updating One
-router.patch('/:id', getTeacher, async (req, res) => {
+router.patch('/:id', checkToken, unauthorizeStudent, unauthorizeTeacher, getTeacher, async (req, res) => {
   if (req.body.fname != null) {
     res.teacher.fname = req.body.fname
   }
@@ -96,7 +97,7 @@ router.patch('/:id', getTeacher, async (req, res) => {
 })
 
 // Deleting One
-router.delete('/:id', getTeacher, async (req, res) => {
+router.delete('/:id', checkToken, unauthorizeStudent, unauthorizeTeacher, getTeacher, async (req, res) => {
   try {
     await res.teacher.remove()
     res.json({ message: 'Deleted Teacher' })

@@ -1,9 +1,10 @@
 const express = require('express')
 const router = express.Router()
 const Score = require('../models/score')
+const { checkToken, unauthorizeStudent, unauthorizeTeacher, unauthorizeResponsible } = require('../authentication/auth')
 
 // Getting all
-router.get('/', async (req, res) => {
+router.get('/', checkToken, unauthorizeStudent, unauthorizeTeacher, async (req, res) => {
   try {
     const Scores = await Score.find()
     res.json(Scores)
@@ -13,12 +14,12 @@ router.get('/', async (req, res) => {
 })
 
 // Getting One
-router.get('/:id', getScore, (req, res) => {
+router.get('/:id', checkToken, getScore, (req, res) => {
   res.json(res.score)
 })
 
 // Getting All For A Single Student
-router.get('/student/:id', async (req, res) => {
+router.get('/student/:id', checkToken, unauthorizeTeacher, async (req, res) => {
     try {
       const Scores = await Score.find({studentId: req.params.id})
       if (Scores.length === 0) {
@@ -31,7 +32,7 @@ router.get('/student/:id', async (req, res) => {
   })
 
 // Getting All For A Certain Module
-router.get('/matiere/:codeM', async (req, res) => {
+router.get('/matiere/:codeM', checkToken, unauthorizeStudent, async (req, res) => {
     try {
       const Scores = await Score.find({moduleId: req.params.codeM})
       if (Scores.length === 0) {
@@ -44,7 +45,7 @@ router.get('/matiere/:codeM', async (req, res) => {
   })
 
 // Creating one
-router.post('/', async (req, res) => {
+router.post('/', checkToken, unauthorizeStudent, unauthorizeResponsible, async (req, res) => {
   const score = new Score({
     studentId: req.body.studentId,
     moduleId: req.body.moduleId,
@@ -59,7 +60,7 @@ router.post('/', async (req, res) => {
 })
 
 // Updating One
-router.patch('/:id', getScore, async (req, res) => {
+router.patch('/:id', checkToken, unauthorizeStudent, unauthorizeResponsible, getScore, async (req, res) => {
   if (req.body.studentId != null) {
     res.score.studentId = req.body.studentId
   }
@@ -78,7 +79,7 @@ router.patch('/:id', getScore, async (req, res) => {
 })
 
 // Deleting One
-router.delete('/:id', getScore, async (req, res) => {
+router.delete('/:id', checkToken, unauthorizeStudent, unauthorizeResponsible, getScore, async (req, res) => {
   try {
     await res.score.remove()
     res.json({ message: 'Deleted Score' })
